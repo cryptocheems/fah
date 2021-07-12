@@ -1,2 +1,3 @@
 # fah
- Distribution script for folding at home
+
+Distribution script for Folding at Home for Cheemscoin
