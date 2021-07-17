@@ -11,6 +11,7 @@ from constants import TOKEN_PATH, CRED_PATH
 SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/spreadsheets"]
 FOLDER_ID = "1gPNzISk1AOfJAMiN1KwZ9RCdakwaIgHi"
 SHEET_ID = "1DvfcHKmsitkXS9sQ5fuTwesuIwlTq_fzNHQ30NdIlXs"
+SUMMARY_ID = "1516589303"
 
 GREEN_BACKGROUND = {
     "userEnteredFormat": {
@@ -81,6 +82,24 @@ class Drive:
             }
             for column in columns
         )
+
+    @staticmethod
+    def _num_cell_format(sheet_id: int, rows: int, column: int, pattern: str):
+        return {
+            "repeatCell": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": 1,
+                    "endRowIndex": rows,
+                    "startColumnIndex": column,
+                    "endColumnIndex": column + 1,
+                },
+                "cell": {
+                    "userEnteredFormat": {"numberFormat": {"pattern": pattern, "type": "NUMBER"}}
+                },
+                "fields": "userEnteredFormat.numberFormat",
+            }
+        }
 
     def create_sheet(self, title: str) -> int:
         response = self._batch_requests({"addSheet": {"properties": {"title": title, "index": 1}}})
@@ -155,18 +174,39 @@ class Drive:
                     "sortSpecs": {"sortOrder": "DESCENDING", "dimensionIndex": 2},
                 }
             },
+            self._num_cell_format(sheet_id, rows, 2, "#"),
+            self._num_cell_format(sheet_id, rows, 3, "#.0000"),
         ]
         self._batch_requests(requests)
 
     def add_blockscout_link(self, sheet_id: int, hash: str):
         link = "https://blockscout.com/xdai/mainnet/tx/" + hash
-        req = {
+        request = {
             "updateCells": {
                 "start": {"sheetId": sheet_id, "rowIndex": 0, "columnIndex": 5},
                 "fields": "userEnteredValue",
                 "rows": [{"values": [{"userEnteredValue": {"stringValue": link}}]}],
             }
         }
-        self._batch_requests(req)
+        self._batch_requests(request)
+
+    def edit_summary(self, week: int, timeframe: str, rows: int):
+        request = {
+            "appendCells": {
+                "sheetId": SUMMARY_ID,
+                "rows": [
+                    {
+                        "values": [
+                            {"userEnteredValue": {"numberValue": week}},
+                            {"userEnteredValue": {"stringValue": timeframe}},
+                            {"userEnteredValue": {"formulaValue": f"='{timeframe}'!D{rows + 1}"}},
+                            {"userEnteredValue": {"formulaValue": f"=D{week}+C{week + 1}"}},
+                        ]
+                    }
+                ],
+                "fields": "userEnteredValue",
+            }
+        }
+        self._batch_requests(request)
 
     # endregion

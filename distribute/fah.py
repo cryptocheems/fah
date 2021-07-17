@@ -21,8 +21,12 @@ def main():
         oldScores: dict = json.load(f)
     with open(START_PATH, "r") as f:
         start = f.read()
+    with open(WEEK_PATH) as f:
+        week_num = int(f.read())
 
     scores: list = get(f"https://api.foldingathome.org/team/{TEAM_ID}/members").json()
+
+    total_cheems = TOTAL_CHEEMS[week_num]
 
     print("Calculating rewards...")
 
@@ -56,8 +60,8 @@ def main():
             "points": user[1][0],
             "adjusted points": user[1][1],
             "cheems": (
-                user[1][1] / totalPoints * (TOTAL_CHEEMS - totalMin)
-                if totalAmount > TOTAL_CHEEMS
+                user[1][1] / totalPoints * (total_cheems - totalMin)
+                if totalAmount > total_cheems
                 else user[1][1] * RATE
             )
             + MIN_CHEEMS,
