@@ -12,6 +12,12 @@ SCOPES = ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/a
 FOLDER_ID = "1gPNzISk1AOfJAMiN1KwZ9RCdakwaIgHi"
 SHEET_ID = "1DvfcHKmsitkXS9sQ5fuTwesuIwlTq_fzNHQ30NdIlXs"
 
+GREEN_BACKGROUND = {
+    "userEnteredFormat": {
+        "backgroundColor": {"red": 99 / 255, "green": 210 / 255, "blue": 151 / 255}
+    }
+}
+
 
 class Drive:
     def __init__(self) -> None:
@@ -65,6 +71,17 @@ class Drive:
         r = {"requests": requests}
         return self.sheets.batchUpdate(spreadsheetId=SHEET_ID, body=r).execute()
 
+    # Returns the sums of ranges formatted as cells
+    @staticmethod
+    def _cells_sums(columns: "list[str]", rows: int):
+        return (
+            {
+                "userEnteredValue": {"formulaValue": f"=SUM({column}2:{column}{rows})"},
+                **GREEN_BACKGROUND,
+            }
+            for column in columns
+        )
+
     def create_sheet(self, title: str) -> int:
         response = self._batch_requests({"addSheet": {"properties": {"title": title, "index": 1}}})
         return response["replies"][0]["addSheet"]["properties"]["sheetId"]
@@ -72,6 +89,7 @@ class Drive:
     def upload_to_sheet(self, csv_path: Path, sheet_id: int, rows: int):
         with open(csv_path) as f:
             csv = f.read()
+        data_range = {"sheetId": sheet_id, "endColumnIndex": 4, "endRowIndex": rows}
         requests = [
             {  # CSV
                 "pasteData": {
@@ -84,7 +102,7 @@ class Drive:
             {  # Alternate colours
                 "addBanding": {
                     "bandedRange": {
-                        "range": {"sheetId": sheet_id, "endColumnIndex": 4, "endRowIndex": rows},
+                        "range": data_range,
                         "rowProperties": {
                             "headerColor": {  # orange/yellow
                                 "red": 247 / 255,
@@ -117,7 +135,38 @@ class Drive:
                     "fields": "pixelSize",
                 }
             },
+            {  # Add totals
+                "appendCells": {
+                    "sheetId": sheet_id,
+                    "rows": [
+                        {
+                            "values": [
+                                {"userEnteredValue": {"stringValue": "Total"}, **GREEN_BACKGROUND},
+                                *self._cells_sums(["B", "C", "D"], rows),
+                            ]
+                        }
+                    ],
+                    "fields": "userEnteredValue,userEnteredFormat",
+                }
+            },
+            {  # Sort
+                "sortRange": {
+                    "range": data_range,
+                    "sortSpecs": {"sortOrder": "DESCENDING", "dimensionIndex": 2},
+                }
+            },
         ]
         self._batch_requests(requests)
+
+    def add_blockscout_link(self, sheet_id: int, hash: str):
+        link = "https://blockscout.com/xdai/mainnet/tx/" + hash
+        req = {
+            "updateCells": {
+                "start": {"sheetId": sheet_id, "rowIndex": 0, "columnIndex": 5},
+                "fields": "userEnteredValue",
+                "rows": [{"values": [{"userEnteredValue": {"stringValue": link}}]}],
+            }
+        }
+        self._batch_requests(req)
 
     # endregion
