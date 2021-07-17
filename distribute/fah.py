@@ -6,8 +6,13 @@ from requests import get
 from csv import DictWriter
 from datetime import date
 from constants import *
-from blockchain import format_address
+from blockchain import format_address, distribute_cheems
 from drive import Drive
+
+
+def format_date(date: str):
+    return f"{date[6:8]}/{date[4:6]}/{date[:4]}"
+
 
 # Adjust points https://www.desmos.com/calculator/c9q5f46aea
 def adjust(score):
@@ -42,9 +47,6 @@ def main():
     if validScores == oldScores:
         raise Exception("Valid scores identical to previous")
 
-    with open(PREVIOUS_PATH, "w") as f:
-        json.dump(validScores, f, indent=4)
-
     weekScores = {
         k: adjust(v - oldScores.get(k, 0))
         for (k, v) in validScores.items()
@@ -69,10 +71,21 @@ def main():
         for user in weekScores.items()
     ]
 
+    print("Distributing Cheemscoin...")
+
+    tx_hash = distribute_cheems(min(total_cheems, totalAmount), cheemsAmounts)
+
+    print("Saving files...")
+
     with open(CSV_PATH, "w", encoding="utf8", newline="") as f:
         dict_writer = DictWriter(f, cheemsAmounts[0].keys())
         dict_writer.writeheader()
         dict_writer.writerows(cheemsAmounts)
+
+    with open(PREVIOUS_PATH, "w") as f:
+        json.dump(validScores, f, indent=4)
+    with open(WEEK_PATH, "w") as f:
+        f.write(str(week_num + 1))
 
     print("Backing up...")
 
@@ -83,6 +96,15 @@ def main():
     drive.upload_file("previous.json", DATA_PATH, folder)
     with open(START_PATH, "w", encoding="utf8") as f:
         f.write(today)
+
+    print("Uploading sheet...")
+
+    sheet_rows = len(cheemsAmounts) + 1
+    timeframe = format_date(start) + " - " + format_date(today)
+    sheet = drive.create_sheet(timeframe)
+    drive.upload_to_sheet(CSV_PATH, sheet, sheet_rows)
+    drive.add_blockscout_link(sheet, tx_hash)
+    drive.edit_summary(week_num, timeframe, sheet_rows)
 
 
 if __name__ == "__main__":

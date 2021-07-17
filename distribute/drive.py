@@ -179,8 +179,8 @@ class Drive:
         ]
         self._batch_requests(requests)
 
-    def add_blockscout_link(self, sheet_id: int, hash: str):
-        link = "https://blockscout.com/xdai/mainnet/tx/" + hash
+    def add_blockscout_link(self, sheet_id: int, tx_hash: str):
+        link = "https://blockscout.com/xdai/mainnet/tx/" + tx_hash
         request = {
             "updateCells": {
                 "start": {"sheetId": sheet_id, "rowIndex": 0, "columnIndex": 5},
