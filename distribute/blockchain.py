@@ -18,13 +18,11 @@ fah: contract.Contract = w3.eth.contract(FAH_CONTRACT, abi=ABI)
 
 
 def distribute_cheems(total: int, users: "list[dict]") -> str:
-    formatted_amounts = [
-        tuple(user["address"], w3.toWei(user["cheems"], "ether")) for user in users
-    ]
+    formatted_amounts = [[user["address"], w3.toWei(user["cheems"], "ether")] for user in users]
     nonce = w3.eth.get_transaction_count(DEV)
-    builtTx = fah.functions.distribute(total, formatted_amounts).buildTransaction(
-        {"nonce": nonce, "gas": 70_000, "gasPrice": w3.toWei("1", "gwei")}
-    )
+    builtTx = fah.functions.distribute(
+        w3.toWei(total, "ether"), formatted_amounts
+    ).buildTransaction({"nonce": nonce, "gas": 1_000_000, "gasPrice": w3.toWei("1", "gwei")})
     signedTx = w3.eth.account.sign_transaction(builtTx, private_key=PRIVATE)
     # ! This is what actually sends the Cheemscoin
     return w3.toHex(w3.eth.send_raw_transaction(signedTx.rawTransaction))
@@ -32,6 +30,6 @@ def distribute_cheems(total: int, users: "list[dict]") -> str:
 
 def format_address(address: str):
     try:
-        return w3.toChecksumAddress(address)
-    except AttributeError:
+        return w3.toChecksumAddress(address[:42])
+    except ValueError:
         return None

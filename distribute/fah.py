@@ -26,8 +26,8 @@ def main():
         oldScores: dict = json.load(f)
     with open(START_PATH, "r") as f:
         start = f.read()
-    with open(WEEK_PATH) as f:
-        week_num = int(f.read())
+    with open(WEEK_PATH, "r") as f:
+        week_num = int(f.read()) + 1
 
     scores: list = get(f"https://api.foldingathome.org/team/{TEAM_ID}/members").json()
 
@@ -85,7 +85,7 @@ def main():
     with open(PREVIOUS_PATH, "w") as f:
         json.dump(validScores, f, indent=4)
     with open(WEEK_PATH, "w") as f:
-        f.write(str(week_num + 1))
+        f.write(str(week_num))
 
     print("Backing up...")
 
