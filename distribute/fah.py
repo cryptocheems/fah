@@ -32,6 +32,7 @@ def main():
     scores: list = get(f"https://api.foldingathome.org/team/{TEAM_ID}/members").json()
 
     total_cheems = TOTAL_CHEEMS[week_num]
+    drive = Drive()  # login to Google Drive
 
     print("Calculating rewards...")
 
@@ -90,7 +91,6 @@ def main():
     print("Backing up...")
 
     today = date.today().strftime("%Y%m%d")
-    drive = Drive()
     folder = drive.create_folder(start + "-" + today)
     drive.upload_file("payout.csv", DATA_PATH, folder)
     drive.upload_file("previous.json", DATA_PATH, folder)
