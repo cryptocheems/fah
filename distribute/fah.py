@@ -22,6 +22,8 @@ def adjust(score):
 def main():
     print("Querying data...")
 
+    drive = Drive()  # login to Google Drive
+
     with open(PREVIOUS_PATH, "r") as f:
         oldScores: dict = json.load(f)
     with open(START_PATH, "r") as f:
@@ -32,7 +34,6 @@ def main():
     scores: list = get(f"https://api.foldingathome.org/team/{TEAM_ID}/members").json()
 
     total_cheems = TOTAL_CHEEMS[week_num]
-    drive = Drive()  # login to Google Drive
 
     print("Calculating rewards...")
 

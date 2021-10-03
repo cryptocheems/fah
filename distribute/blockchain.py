@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-PROVIDER = "https://xdai.1hive.org/"
+PROVIDER = "https://rpc.xdaichain.com/"
 PRIVATE = getenv("PRIVATE")
 DEV = "0xB67D4dd9F0E25760dC0f373d79588Bd0169b2335"
 FAH_CONTRACT = "0x8EA52113AF2a2ebbAb823037aFa6cc903B2BBbC8"
