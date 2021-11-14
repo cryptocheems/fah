@@ -1,4 +1,7 @@
 # This is the file that should be run
+# * If you get the error "ValueError: {'code': -32010, 'message': 'Filtered'}"
+# * then check what the gas price is on https://blockscout.com/ and change it in
+# * blockchain.py to match or be higher
 
 import json
 from math import log
