@@ -1,19 +1,9 @@
 from pathlib import Path
 
 TEAM_ID = "1060762"
-_TOTAL_CHEEMS = {
-    range(1, 6): 7000,
-    range(6, 11): 4000,
-    range(11, 21): 3000,
-    range(21, 36): 2000,
-    range(36, 51): 1500,
-    range(51, 71): 625
-    # TODO: Handle when range is greater than this
-}
-# https://stackoverflow.com/a/57884712/13837629
-TOTAL_CHEEMS = {num: value for rng, value in _TOTAL_CHEEMS.items() for num in rng}
-MIN_CHEEMS = 3
-RATE = 1 / 5000
+TOTAL_CHEEMS = 20_000
+MIN_CHEEMS = 10
+RATE = 1 / 3000
 
 # This is so it works wherever it's called
 DATA_PATH = Path(__file__).parent / "../data"

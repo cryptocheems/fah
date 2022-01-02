@@ -22,7 +22,7 @@ def distribute_cheems(total: int, users: "list[dict]") -> str:
     nonce = w3.eth.get_transaction_count(DEV)
     builtTx = fah.functions.distribute(
         w3.toWei(total, "ether"), formatted_amounts
-    ).buildTransaction({"nonce": nonce, "gas": 1_000_000, "gasPrice": w3.toWei("1", "gwei")})
+    ).buildTransaction({"nonce": nonce, "gas": 1_000_000, "gasPrice": w3.toWei("1.22", "gwei")})
     signedTx = w3.eth.account.sign_transaction(builtTx, private_key=PRIVATE)
     # ! This is what actually sends the Cheemscoin
     return w3.toHex(w3.eth.send_raw_transaction(signedTx.rawTransaction))

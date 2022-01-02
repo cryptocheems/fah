@@ -36,7 +36,7 @@ def main():
 
     scores: list = get(f"https://api.foldingathome.org/team/{TEAM_ID}/members").json()
 
-    total_cheems = TOTAL_CHEEMS[week_num]
+    total_cheems = TOTAL_CHEEMS
 
     print("Calculating rewards...")
 
